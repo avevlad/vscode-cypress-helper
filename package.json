@@ -17,9 +17,17 @@
 		"commands": [
 			{
 				"command": "vscode-cypress-helper.helloWorld",
-				"title": "Hello World"
+				"title": "Cypress: change it only"
 			}
-		]
+		],
+		"keybindings": [
+      {
+        "command": "vscode-cypress-helper.helloWorld",
+				"key": "shift+cmd+k",
+				"mac": "shift+cmd+k",
+				"when": "editorTextFocus"
+      }
+    ]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
