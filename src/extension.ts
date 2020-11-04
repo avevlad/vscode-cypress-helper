@@ -1,51 +1,56 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode'
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
-  // Use the console to output diagnostic information (console.log) and errors (console.error)
-  // This line of code will only be executed once when your extension is activated
-  console.log(
-    'Congratulations, your extension "vscode-cypress-helper" is now active!'
-  )
+let regexIt = / it\(/g
+let regexItWithOnly = / it.only\(/g
+let values = {
+  it: ' it(',
+  itWithOnly: ' it.only('
+}
 
-  // The command has been defined in the package.json file
-  // Now provide the implementation of the command with registerCommand
-  // The commandId parameter must match the command field in package.json
+export function activate(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(
     'vscode-cypress-helper.helloWorld',
     () => {
-      // The code you place here will be executed every time your command is executed
-
       let editor = vscode.window.activeTextEditor
       if (!editor) {
         return
       }
 
-      let logValue = editor.document.getText(editor.selection)
+      let { selection, document } = editor
+      let replaceLine: number | null = null
+      let replaceValue: string = ''
 
-      const { selection, document } = editor
+      for (let i = selection.active.line + 1; i--; ) {
+        const { text } = document.lineAt(i)
+        if (text.match(regexIt) || text.match(regexItWithOnly)) {
+          replaceLine = i
+          if (text.match(regexIt)) {
+            replaceValue = text.replace(regexIt, values.itWithOnly)
+          }
+          if (text.match(regexItWithOnly)) {
+            replaceValue = text.replace(regexItWithOnly, values.it)
+          }
+          break
+        }
+      }
 
-      console.log(selection)
-      console.log(document)
+      if (!replaceLine) {
+        return
+      }
+
       editor.edit((editBuilder) => {
-        console.log('selection.active.character', selection.active.character)
         editBuilder.replace(
           new vscode.Range(
-            new vscode.Position(selection.active.line, 0),
-            new vscode.Position(selection.active.line, 9999999999)
+            new vscode.Position(replaceLine as number, 0),
+            new vscode.Position(replaceLine as number, 9999999999)
           ),
-          'привет vscode'
+          replaceValue
         )
       })
-      vscode.window.showInformationMessage(logValue)
     }
   )
 
   context.subscriptions.push(disposable)
 }
 
-// this method is called when your extension is deactivated
 export function deactivate() {}
